@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Projet Plan Complet - Analyse de Sentiments Darija</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        arabic: ['Noto Naskh Arabic', 'serif'],
+                    },
+                    colors: {
+                        'darkest': '#0a0a0f',
+                        'dark': '#12121a',
+                        'card': '#1a1a25',
+                        'accent': '#6366f1',
+                        'accent-glow': '#818cf8',
+                        'success': '#10b981',
+                        'warning': '#f59e0b',
+                        'danger': '#ef4444',
+                        'info': '#3b82f6',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px #6366f1, 0 0 10px #6366f1' },
+                            '100%': { boxShadow: '0 0 20px #6366f1, 0 0 30px #818cf8' },
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0f 0%, #12121a 50%, #0a0a0f 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(26, 26, 37, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gradient-border {
+            position: relative;
+            background: linear-gradient(135deg, #1a1a25 0%, #12121a 100%);
+        }
+
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-dot {
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot.active {
+            background: #6366f1;
+            transform: scale(1.5);
+        }
+
+        .section-hidden {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .section-visible {
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        .arabic-text {
+            font-family: 'Noto Naskh Arabic', serif;
+            direction: rtl;
+        }
+
+        .table-row-anim {
+            transition: all 0.3s ease;
+        }
+
+        .table-row-anim:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: scale(1.01);
+        }
+
+        .icon-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .tag-pill {
+            transition: all 0.3s ease;
+        }
+
+        .tag-pill:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+        }
+
+        .grid-pattern {
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    </style>
+</head>
+<body class="text-gray-300 font-sans overflow-x-hidden">
+    <!-- Navigation Dots -->
+    <nav class="fixed right-6 top-1/2 transform -translate-y-1/2 z-50 space-y-4 hidden md:block">
+        <a href="#hero" class="nav-dot block w-3 h-3 rounded-full bg-gray-600 hover:bg-accent transition-all" data-section="hero"></a>
+        <a href="#overview" class="nav-dot block w-3 h-3 rounded-full bg-gray-600 hover:bg-accent transition-all" data-section="overview"></a>
+        <a href="#plan-etude" class="nav-dot block w-3 h-3 rounded-full bg-gray-600 hover:bg-accent transition-all" data-section="plan-etude"></a>
+        <a href="#ressources" class="nav-dot block w-3 h-3 rounded-full bg-gray-600 hover:bg-accent transition-all" data-section="ressources"></a>
+        <a href="#plan-travail" class="nav-dot block w-3 h-3 rounded-full bg-gray-600 hover:bg-accent transition-all" data-section="plan-travail"></a>
+        <a href="#outils" class="nav-dot block w-3 h-3 rounded-full bg-gray-600 hover:bg-accent transition-all" data-section="outils"></a>
+        <a href="#notation" class="nav-dot block w-3 h-3 rounded-full bg-gray-600 hover:bg-accent transition-all" data-section="notation"></a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="min-h-screen flex items-center justify-center relative overflow-hidden grid-pattern">
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-20 left-10 w-72 h-72 bg-accent/20 rounded-full blur-3xl" style="animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+            <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" style="animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite; animation-delay: 2s;"></div>
+        </div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="max-w-5xl mx-auto text-center">
+                <div class="mb-6 inline-block" style="animation: slideUp 0.6s ease-out;">
+                    <span class="px-4 py-2 rounded-full glass-card text-accent text-sm font-medium tracking-wider uppercase">
+                        Master 1 DS & NLP — 2025/2026
+                    </span>
+                </div>
+
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight" style="animation: slideUp 0.6s ease-out 0.1s both;">
+                    <span class="gradient-text">Mini Projet</span><br>
+                    <span class="text-white">Plan Complet</span>
+                </h1>
+
+                <div class="text-3xl md:text-4xl font-arabic text-accent-glow mb-8" style="animation: float 6s ease-in-out infinite;">
+                    تحليل المشاعر بالدارجة الجزائرية
+                </div>
+
+                <p class="text-xl text-gray-400 mb-12 max-w-2xl mx-auto" style="animation: slideUp 0.6s ease-out 0.2s both;">
+                    Analyse de Sentiments en Darija Algérienne — Machine Learning
+                </p>
+
+                <!-- Info Pills -->
+                <div class="flex flex-wrap justify-center gap-4 mb-12" style="animation: slideUp 0.6s ease-out 0.3s both;">
+                    <div class="glass-card px-6 py-3 rounded-full hover-lift">
+                        <i class="fas fa-clock text-accent mr-2"></i>
+                        <span class="text-white font-medium">4 à 6 semaines</span>
+                    </div>
+                    <div class="glass-card px-6 py-3 rounded-full hover-lift">
+                        <i class="fas fa-users text-success mr-2"></i>
+                        <span class="text-white font-medium">Binôme</span>
+                    </div>
+                    <div class="glass-card px-6 py-3 rounded-full hover-lift">
+                        <i class="fas fa-database text-warning mr-2"></i>
+                        <span class="text-white font-medium">TWIFL — 6000 tweets</span>
+                    </div>
+                    <div class="glass-card px-6 py-3 rounded-full hover-lift">
+                        <i class="fas fa-brain text-info mr-2"></i>
+                        <span class="text-white font-medium">DziriBERT</span>
+                    </div>
+                    <div class="glass-card px-6 py-3 rounded-full hover-lift">
+                        <i class="fas fa-calendar text-danger mr-2"></i>
+                        <span class="text-white font-medium">Soutenance: 26 Avril 2026</span>
+                    </div>
+                </div>
+
+                <!-- Main Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-12" style="animation: slideUp 0.6s ease-out 0.4s both;">
+                    <div class="glass-card p-6 rounded-2xl hover-lift cursor-pointer group" onclick="document.getElementById('plan-etude').scrollIntoView({behavior: 'smooth'})">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <span class="text-white font-bold text-xl">I</span>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg mb-2">Plan d'Étude</h3>
+                        <p class="text-sm text-gray-400 arabic-text">خطة الدراسة — المجاور النظرية والأدوات</p>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl hover-lift cursor-pointer group" onclick="document.getElementById('ressources').scrollIntoView({behavior: 'smooth'})">
+                        <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <span class="text-white font-bold text-xl">II</span>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg mb-2">Ressources</h3>
+                        <p class="text-sm text-gray-400 arabic-text">المصادر — HuggingFace · Papers · Kaggle</p>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl hover-lift cursor-pointer group" onclick="document.getElementById('plan-travail').scrollIntoView({behavior: 'smooth'})">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <span class="text-white font-bold text-xl">III</span>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg mb-2">Plan de Travail</h3>
+                        <p class="text-sm text-gray-400 arabic-text">خطة العمل — مقسمة حسب متطلبات الأستاذة</p>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl hover-lift cursor-pointer group" onclick="document.getElementById('outils').scrollIntoView({behavior: 'smooth'})">
+                        <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <span class="text-white font-bold text-xl">IV</span>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg mb-2">Outils Collaboratifs</h3>
+                        <p class="text-sm text-gray-400 arabic-text">الأدوات التعاونية — GitHub · Colab · Notion</p>
+                    </div>
+                </div>
+
+                <div class="mt-12 text-sm text-gray-500" style="animation: slideUp 0.6s ease-out 0.5s both;">
+                    Université USDB — Dépt. Informatique — Dr. Soraya Cheriguene
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overview Section -->
+    <section id="overview" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-4xl font-bold text-white mb-12 text-center">
+                    <span class="gradient-text">Vue d'ensemble</span> du Projet
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="glass-card p-8 rounded-2xl gradient-border hover-lift" style="animation: slideUp 0.6s ease-out;">
+                        <div class="icon-float text-4xl text-accent mb-4" style="animation: float 3s ease-in-out infinite;">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Class Imbalance</h3>
+                        <p class="text-gray-400">Gestion du déséquilibre des classes avec F1-macro, AUC-PR, et techniques de rééquilibrage avancées.</p>
+                    </div>
+
+                    <div class="glass-card p-8 rounded-2xl gradient-border hover-lift" style="animation: slideUp 0.6s ease-out 0.1s both;">
+                        <div class="icon-float text-4xl text-success mb-4" style="animation: float 3s ease-in-out infinite; animation-delay: 0.5s;">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Transformers & BERT</h3>
+                        <p class="text-gray-400">Fine-tuning de DziriBERT avec HuggingFace Trainer, extraction d'embeddings [CLS] 768 dimensions.</p>
+                    </div>
+
+                    <div class="glass-card p-8 rounded-2xl gradient-border hover-lift" style="animation: slideUp 0.6s ease-out 0.2s both;">
+                        <div class="icon-float text-4xl text-warning mb-4" style="animation: float 3s ease-in-out infinite; animation-delay: 1s;">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Data Augmentation</h3>
+                        <p class="text-gray-400">Back-Translation AR↔FR, SMOTE/ADASYN sur embeddings, génération de données synthétiques.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Plan d'Étude Section -->
+    <section id="plan-etude" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <span class="text-accent font-medium tracking-wider uppercase">Section I</span>
+                    <h2 class="text-4xl font-bold text-white mt-2">Plan d'Étude — Commun</h2>
+                    <p class="text-gray-400 mt-2 arabic-text">خطة الدراسة — موحدة</p>
+                </div>
+
+                <!-- Axe 1 -->
+                <div class="mb-12" style="animation: slideUp 0.6s ease-out;">
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-6 border-b border-gray-700">
+                            <h3 class="text-2xl font-bold text-white">Axe 1 — Class Imbalance</h3>
+                            <p class="text-accent arabic-text">المشكلة والمقاييس</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="text-white font-semibold mb-3 flex items-center">
+                                        <i class="fas fa-book text-accent mr-2"></i> المفهوم (Concept)
+                                    </h4>
+                                    <ul class="space-y-2 text-gray-400">
+                                        <li class="flex items-start">
+                                            <span class="text-accent mr-2">•</span>
+                                            <span><strong class="text-white">Class Imbalance:</strong> Exemple: 70% Positif → accuracy fausse</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-accent mr-2">•</span>
+                                            <span><strong class="text-white">F1-macro:</strong> Métrique principale du projet</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-accent mr-2">•</span>
+                                            <span><strong class="text-white">F1 par classe:</strong> Positive / Negative / Neutral</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-semibold mb-3 flex items-center">
+                                        <i class="fas fa-lightbulb text-warning mr-2"></i> ما يجب فهمه (À comprendre)
+                                    </h4>
+                                    <ul class="space-y-2 text-gray-400">
+                                        <li class="flex items-start">
+                                            <span class="text-warning mr-2">→</span>
+                                            <span>Pourquoi accuracy est trompeuse avec déséquilibre</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-warning mr-2">→</span>
+                                            <span>Trade-off Precision / Recall</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-warning mr-2">→</span>
+                                            <span>AUC-PR meilleur que AUC-ROC sur données déséquilibrées</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-warning mr-2">→</span>
+                                            <span>G-mean: racine carrée de la moyenne géométrique des Recalls</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-warning mr-2">→</span>
+                                            <span>Confusion Matrix à 3 classes: visualisation des erreurs</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Axe 2 -->
+                <div class="mb-12" style="animation: slideUp 0.6s ease-out 0.1s both;">
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-6 border-b border-gray-700">
+                            <h3 class="text-2xl font-bold text-white">Axe 2 — Transformers, BERT & Fine-tuning</h3>
+                            <p class="text-accent arabic-text">الترانسفورمرز والتعديل الدقيق</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="text-white font-semibold mb-3">Architecture BERT</h4>
+                                    <ul class="space-y-2 text-gray-400">
+                                        <li>• Encoder bidirectionnel</li>
+                                        <li>• Attention Mechanism</li>
+                                        <li>• Tokenization spécifique</li>
+                                        <li>• Token [CLS]: vecteur 768 dimensions</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-semibold mb-3">DziriBERT & Configuration</h4>
+                                    <ul class="space-y-2 text-gray-400">
+                                        <li>• Spécialisé pour la darija algérienne</li>
+                                        <li>• 20M tokens, support Arabizi</li>
+                                        <li>• <span class="text-accent font-mono">epochs=5, lr=2e-5, batch=16</span></li>
+                                        <li>• <span class="text-accent font-mono">seed=42, AdamW</span> — Ne pas changer!</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Axe 3 -->
+                <div class="mb-12" style="animation: slideUp 0.6s ease-out 0.2s both;">
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <div class="bg-gradient-to-r from-pink-600/20 to-red-600/20 p-6 border-b border-gray-700">
+                            <h3 class="text-2xl font-bold text-white">Axe 3 — Loss Functions المعدلة</h3>
+                        </div>
+                        <div class="p-6 overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-700">
+                                        <th class="text-left py-3 px-4 text-white font-semibold">Loss Function</th>
+                                        <th class="text-left py-3 px-4 text-white font-semibold">Description</th>
+                                        <th class="text-left py-3 px-4 text-white font-semibold arabic-text">الوصف</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-400">
+                                    <tr class="table-row-anim border-b border-gray-800">
+                                        <td class="py-3 px-4 font-mono text-accent">CrossEntropy standard</td>
+                                        <td class="py-3 px-4">Baseline sans pondération</td>
+                                        <td class="py-3 px-4 arabic-text">الخسارة القياسية</td>
+                                    </tr>
+                                    <tr class="table-row-anim border-b border-gray-800">
+                                        <td class="py-3 px-4 font-mono text-accent">ClassWeighting</td>
+                                        <td class="py-3 px-4">w<sub>i</sub> = total / (nb_classes × nb_class_i)</td>
+                                        <td class="py-3 px-4 arabic-text">ترجيح حسب حجم الفئة</td>
+                                    </tr>
+                                    <tr class="table-row-anim border-b border-gray-800">
+                                        <td class="py-3 px-4 font-mono text-accent">Focal Loss</td>
+                                        <td class="py-3 px-4">Focus sur exemples difficiles avec γ</td>
+                                        <td class="py-3 px-4 arabic-text">التركيز على الأمثلة الصعبة</td>
+                                    </tr>
+                                    <tr class="table-row-anim border-b border-gray-800">
+                                        <td class="py-3 px-4 font-mono text-accent">γ = 2 vs γ = 1</td>
+                                        <td class="py-3 px-4">γ=0 → CrossEntropy | γ=2 → plus agressif</td>
+                                        <td class="py-3 px-4 arabic-text">معامل التركيز</td>
+                                    </tr>
+                                    <tr class="table-row-anim">
+                                        <td class="py-3 px-4 font-mono text-accent">Combinaison CW + FL</td>
+                                        <td class="py-3 px-4">Class Weighting + Focal Loss combinés</td>
+                                        <td class="py-3 px-4 arabic-text">الجمع بين الطريقتين</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Axe 4 & 5 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div style="animation: slideUp 0.6s ease-out 0.3s both;">
+                        <div class="glass-card rounded-2xl overflow-hidden h-full">
+                            <div class="bg-gradient-to-r from-emerald-600/20 to-teal-600/20 p-6 border-b border-gray-700">
+                                <h3 class="text-xl font-bold text-white">Axe 4 — Embeddings & SMOTE</h3>
+                            </div>
+                            <div class="p-6">
+                                <ul class="space-y-3 text-gray-400">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-vector-square text-emerald-500 mr-3 mt-1"></i>
+                                        <div>
+                                            <strong class="text-white">[CLS] Embeddings:</strong> Extraction vecteur 768 de DziriBERT sans tête de classification
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-clone text-emerald-500 mr-3 mt-1"></i>
+                                        <div>
+                                            <strong class="text-white">SMOTE:</strong> Génération de points synthétiques par interpolation K-NN
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-layer-group text-emerald-500 mr-3 mt-1"></i>
+                                        <div>
+                                            <strong class="text-white">ADASYN:</strong> Extension SMOTE adaptative selon densité
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-balance-scale-right text-emerald-500 mr-3 mt-1"></i>
+                                        <div>
+                                            <strong class="text-white">Test:</strong> Rééquilibrage total vs partiel — comparer F1-macro
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="animation: slideUp 0.6s ease-out 0.4s both;">
+                        <div class="glass-card rounded-2xl overflow-hidden h-full">
+                            <div class="bg-gradient-to-r from-amber-600/20 to-orange-600/20 p-6 border-b border-gray-700">
+                                <h3 class="text-xl font-bold text-white">Axe 5 — Back-Translation</h3>
+                                <p class="text-accent arabic-text">الترجمة العكسية وتوليد البيانات</p>
+                            </div>
+                            <div class="p-6">
+                                <ul class="space-y-3 text-gray-400">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-exchange-alt text-amber-500 mr-3 mt-1"></i>
+                                        <div>
+                                            <strong class="text-white">Processus:</strong> Tweet → Français → Arabe = paraphrase naturelle
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-robot text-amber-500 mr-3 mt-1"></i>
+                                        <div>
+                                            <strong class="text-white">Helsinki-NLP:</strong> Modèle AR↔FR open-source sur HuggingFace
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-filter text-amber-500 mr-3 mt-1"></i>
+                                        <div>
+                                            <strong class="text-white">Filtrage cosinus:</strong> 0.5–0.85 (sinon rejet)
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-percentage text-amber-500 mr-3 mt-1"></i>
+                                        <div>
+                                            <strong class="text-white">Taux:</strong> 100% / 50% / 20% de la classe minoritaire
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Axe 6 -->
+                <div class="mt-12" style="animation: slideUp 0.6s ease-out 0.5s both;">
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <div class="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 p-6 border-b border-gray-700">
+                            <h3 class="text-2xl font-bold text-white">Axe 6 — الأدوات التقنية المطلوبة</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="tag-pill glass-card px-4 py-3 rounded-xl text-center">
+                                    <i class="fas fa-database text-cyan-400 text-2xl mb-2"></i>
+                                    <div class="text-white font-medium">datasets</div>
+                                    <div class="text-xs text-gray-500">HuggingFace</div>
+                                </div>
+                                <div class="tag-pill glass-card px-4 py-3 rounded-xl text-center">
+                                    <i class="fas fa-cube text-purple-400 text-2xl mb-2"></i>
+                                    <div class="text-white font-medium">transformers</div>
+                                    <div class="text-xs text-gray-500">BERT/DziriBERT</div>
+                                </div>
+                                <div class="tag-pill glass-card px-4 py-3 rounded-xl text-center">
+                                    <i class="fab fa-python text-yellow-400 text-2xl mb-2"></i>
+                                    <div class="text-white font-medium">torch</div>
+                                    <div class="text-xs text-gray-500">PyTorch</div>
+                                </div>
+                                <div class="tag-pill glass-card px-4 py-3 rounded-xl text-center">
+                                    <i class="fas fa-balance-scale text-green-400 text-2xl mb-2"></i>
+                                    <div class="text-white font-medium">imbalanced-learn</div>
+                                    <div class="text-xs text-gray-500">SMOTE/ADASYN</div>
+                                </div>
+                                <div class="tag-pill glass-card px-4 py-3 rounded-xl text-center">
+                                    <i class="fas fa-chart-line text-blue-400 text-2xl mb-2"></i>
+                                    <div class="text-white font-medium">scikit-learn</div>
+                                    <div class="text-xs text-gray-500">Metrics</div>
+                                </div>
+                                <div class="tag-pill glass-card px-4 py-3 rounded-xl text-center">
+                                    <i class="fas fa-chart-bar text-pink-400 text-2xl mb-2"></i>
+                                    <div class="text-white font-medium">matplotlib/seaborn</div>
+                                    <div class="text-xs text-gray-500">Visualisation</div>
+                                </div>
+                                <div class="tag-pill glass-card px-4 py-3 rounded-xl text-center">
+                                    <i class="fas fa-cloud text-indigo-400 text-2xl mb-2"></i>
+                                    <div class="text-white font-medium">wordcloud</div>
+                                    <div class="text-xs text-gray-500">Nuage de mots</div>
+                                </div>
+                                <div class="tag-pill glass-card px-4 py-3 rounded-xl text-center">
+                                    <i class="fas fa-language text-orange-400 text-2xl mb-2"></i>
+                                    <div class="text-white font-medium">Helsinki-NLP</div>
+                                    <div class="text-xs text-gray-500">Traduction AR↔FR</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ressources Section -->
+    <section id="ressources" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <span class="text-accent font-medium tracking-wider uppercase">Section II</span>
+                    <h2 class="text-4xl font-bold text-white mt-2">Ressources</h2>
+                    <p class="text-gray-400 mt-2 arabic-text">المصادر</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- HuggingFace -->
+                    <div style="animation: slideUp 0.6s ease-out;">
+                        <div class="glass-card rounded-2xl p-6 h-full hover-lift">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-smile text-yellow-400 text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">HuggingFace</h3>
+                                    <p class="text-sm text-gray-400 arabic-text">النماذج والبيانات</p>
+                                </div>
+                            </div>
+                            <ul class="space-y-3">
+                                <li class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <span class="text-gray-300">TWIFL Dataset</span>
+                                    <a href="https://huggingface.co/datasets/arbml/Twifil" target="_blank" class="text-accent hover:text-accent-glow">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </li>
+                                <li class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <span class="text-gray-300">DziriBERT</span>
+                                    <a href="https://huggingface.co/alger-ia/dziribert" target="_blank" class="text-accent hover:text-accent-glow">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </li>
+                                <li class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <span class="text-gray-300">Helsinki AR→FR</span>
+                                    <a href="https://huggingface.co/Helsinki-NLP/opus-mt-ar-fr" target="_blank" class="text-accent hover:text-accent-glow">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </li>
+                                <li class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <span class="text-gray-300">NLP Course</span>
+                                    <a href="https://huggingface.co/learn/nlp-course" target="_blank" class="text-accent hover:text-accent-glow">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Papers -->
+                    <div style="animation: slideUp 0.6s ease-out 0.1s both;">
+                        <div class="glass-card rounded-2xl p-6 h-full hover-lift">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-file-alt text-blue-400 text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Papers Scientifiques</h3>
+                                    <p class="text-sm text-gray-400 arabic-text">الأوراق العلمية الأساسية</p>
+                                </div>
+                            </div>
+                            <ul class="space-y-3">
+                                <li class="p-3 bg-dark rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="text-white font-medium">SMOTE Original</div>
+                                            <div class="text-xs text-gray-500">Chawla et al. 2002</div>
+                                        </div>
+                                        <a href="https://arxiv.org/abs/1106.1813" target="_blank" class="text-accent">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </div>
+                                </li>
+                                <li class="p-3 bg-dark rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="text-white font-medium">Focal Loss</div>
+                                            <div class="text-xs text-gray-500">Lin et al. 2017</div>
+                                        </div>
+                                        <a href="https://arxiv.org/abs/1708.02002" target="_blank" class="text-accent">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </div>
+                                </li>
+                                <li class="p-3 bg-dark rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="text-white font-medium">BERT Original</div>
+                                            <div class="text-xs text-gray-500">Devlin et al. 2018</div>
+                                        </div>
+                                        <a href="https://arxiv.org/abs/1810.04805" target="_blank" class="text-accent">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </div>
+                                </li>
+                                <li class="p-3 bg-dark rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="text-white font-medium">ACL Anthology</div>
+                                            <div class="text-xs text-gray-500">Arabic Dialect NLP</div>
+                                        </div>
+                                        <a href="https://aclanthology.org" target="_blank" class="text-accent">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Documentation -->
+                    <div style="animation: slideUp 0.6s ease-out 0.2s both;">
+                        <div class="glass-card rounded-2xl p-6 h-full hover-lift">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-book-open text-green-400 text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Documentation</h3>
+                                    <p class="text-sm text-gray-500">Kaggle & Docs</p>
+                                </div>
+                            </div>
+                            <ul class="space-y-3">
+                                <li class="p-3 bg-dark rounded-lg">
+                                    <div class="text-white font-medium">HuggingFace Trainer API</div>
+                                    <div class="text-xs text-gray-500">huggingface.co/docs/transformers</div>
+                                </li>
+                                <li class="p-3 bg-dark rounded-lg">
+                                    <div class="text-white font-medium">imbalanced-learn</div>
+                                    <div class="text-xs text-gray-500">SMOTE/ADASYN reference</div>
+                                </li>
+                                <li class="p-3 bg-dark rounded-lg">
+                                    <div class="text-white font-medium">scikit-learn Metrics</div>
+                                    <div class="text-xs text-gray-500">Classification metrics guide</div>
+                                </li>
+                                <li class="p-3 bg-dark rounded-lg">
+                                    <div class="text-white font-medium">PyTorch Custom Loss</div>
+                                    <div class="text-xs text-gray-500">Focal Loss implementation</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Plan de Travail Section -->
+    <section id="plan-travail" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <span class="text-accent font-medium tracking-wider uppercase">Section III</span>
+                    <h2 class="text-4xl font-bold text-white mt-2">Plan de Travail</h2>
+                    <p class="text-gray-400 mt-2 arabic-text">خطة العمل — مبنية على متطلبات الأستاذة</p>
+                </div>
+
+                <!-- Warning Box -->
+                <div class="mb-12" style="animation: slideUp 0.6s ease-out;">
+                    <div class="glass-card rounded-2xl p-6 border-l-4 border-danger bg-danger/10">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-danger text-2xl mr-4 mt-1"></i>
+                            <div>
+                                <h4 class="text-white font-bold text-lg mb-2">⚠️ Règle d'Or — Test Set</h4>
+                                <p class="text-gray-300">Test Set = créé <strong class="text-white">UNE SEULE FOIS</strong> — random_state=42 + stratification — <strong class="text-danger">JAMAIS modifié, JAMAIS rééquilibré</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Personne 1 -->
+                    <div style="animation: slideUp 0.6s ease-out 0.1s both;">
+                        <div class="glass-card rounded-2xl overflow-hidden">
+                            <div class="bg-gradient-to-r from-blue-600/30 to-cyan-600/30 p-6 border-b border-gray-700">
+                                <div class="flex items-center">
+                                    <div class="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl mr-4">
+                                        P1
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-white">Personne 1</h3>
+                                        <p class="text-blue-400">EDA + Preprocessing + Baseline</p>
+                                        <p class="text-sm text-gray-400">Étapes 1, 2, 3</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                <div class="border-l-2 border-blue-500 pl-4">
+                                    <h4 class="text-white font-semibold mb-2">Analyse de la variable cible</h4>
+                                    <ul class="text-gray-400 text-sm space-y-1">
+                                        <li>• Distribution: Positive / Negative / Neutral</li>
+                                        <li>• Classes majoritaires vs minoritaires</li>
+                                        <li>• Analyse linguistique des tweets</li>
+                                        <li>• Code-switching: arabe / français / Arabizi</li>
+                                        <li>• Tweets avec emojis</li>
+                                        <li>• WordCloud séparé par classe</li>
+                                    </ul>
+                                </div>
+
+                                <div class="border-l-2 border-cyan-500 pl-4">
+                                    <h4 class="text-white font-semibold mb-2">Nettoyage de base</h4>
+                                    <ul class="text-gray-400 text-sm space-y-1">
+                                        <li>• Supprimer URLs (https://t.co/...)</li>
+                                        <li>• Supprimer mentions (@utilisateur)</li>
+                                        <li>• Normaliser emojis (justifier le choix)</li>
+                                        <li>• Supprimer doublons et tweets vides</li>
+                                    </ul>
+                                </div>
+
+                                <div class="border-l-2 border-teal-500 pl-4">
+                                    <h4 class="text-white font-semibold mb-2">Normalisation darija</h4>
+                                    <ul class="text-gray-400 text-sm space-y-1">
+                                        <li>• Normaliser lettres répétées (مممزيان → مزيان)</li>
+                                        <li>• <span class="text-success">✓ Garder</span> mots français (code-switching = feature)</li>
+                                        <li>• <span class="text-danger">✗ Pas de</span> stemming/lemmatisation (DziriBERT tokenise)</li>
+                                    </ul>
+                                </div>
+
+                                <div class="border-l-2 border-green-500 pl-4">
+                                    <h4 class="text-white font-semibold mb-2">Split Train/Val/Test</h4>
+                                    <div class="flex gap-4 mt-2">
+                                        <div class="bg-dark px-3 py-1 rounded text-sm">
+                                            <span class="text-green-400">70%</span> Train
+                                        </div>
+                                        <div class="bg-dark px-3 py-1 rounded text-sm">
+                                            <span class="text-yellow-400">15%</span> Val
+                                        </div>
+                                        <div class="bg-dark px-3 py-1 rounded text-sm">
+                                            <span class="text-red-400">15%</span> Test
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Tweets 1-2 mots → décision</p>
+                                </div>
+
+                                <div class="bg-gradient-to-r from-blue-900/30 to-transparent p-4 rounded-xl border border-blue-500/30">
+                                    <h4 class="text-white font-semibold mb-2">
+                                        <i class="fas fa-baseline text-blue-400 mr-2"></i>Modèle Baseline
+                                    </h4>
+                                    <p class="text-gray-400 text-sm">Sans aucun rééquilibrage — Fine-tuning DziriBERT standard</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personne 2 -->
+                    <div style="animation: slideUp 0.6s ease-out 0.2s both;">
+                        <div class="glass-card rounded-2xl overflow-hidden">
+                            <div class="bg-gradient-to-r from-purple-600/30 to-pink-600/30 p-6 border-b border-gray-700">
+                                <div class="flex items-center">
+                                    <div class="w-14 h-14 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl mr-4">
+                                        P2
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-white">Personne 2</h3>
+                                        <p class="text-purple-400">Stratégies 1, 2 & 3</p>
+                                        <p class="text-sm text-gray-400">Étapes 4, 5, 6</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                <!-- Stratégie 1 -->
+                                <div class="border-l-2 border-purple-500 pl-4">
+                                    <h4 class="text-white font-semibold mb-2 flex items-center">
+                                        <span class="bg-purple-500 text-white text-xs px-2 py-1 rounded mr-2">S1</span>
+                                        Loss Functions
+                                    </h4>
+                                    <ul class="text-gray-400 text-sm space-y-1">
+                                        <li>• <strong>Class Weighting:</strong> w = total/(nb_classes × nb_exemples)</li>
+                                        <li>• <strong>Focal Loss:</strong> γ=1 et γ=2 séparément</li>
+                                        <li>• <strong>Combinaison CW+FL</strong> (Variante C)</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Stratégie 2 -->
+                                <div class="border-l-2 border-pink-500 pl-4">
+                                    <h4 class="text-white font-semibold mb-2 flex items-center">
+                                        <span class="bg-pink-500 text-white text-xs px-2 py-1 rounded mr-2">S2</span>
+                                        SMOTE & ADASYN
+                                    </h4>
+                                    <ul class="text-gray-400 text-sm space-y-1">
+                                        <li>• Extraction embeddings [CLS] (768 dim)</li>
+                                        <li>• SMOTE sur embeddings (total vs partiel)</li>
+                                        <li>• ADASYN adaptatif</li>
+                                        <li>• Classifieur MLP ou SVM sur features</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Stratégie 3 -->
+                                <div class="border-l-2 border-rose-500 pl-4">
+                                    <h4 class="text-white font-semibold mb-2 flex items-center">
+                                        <span class="bg-rose-500 text-white text-xs px-2 py-1 rounded mr-2">S3</span>
+                                        Back-Translation (4 phases)
+                                    </h4>
+                                    <ol class="text-gray-400 text-sm space-y-1 list-decimal list-inside">
+                                        <li>Sélection tweets classe minoritaire</li>
+                                        <li>Traduire AR→FR (Helsinki-NLP)</li>
+                                        <li>Retraduire FR→AR</li>
+                                        <li>Filtrer: similarité cosinus 0.5-0.85</li>
+                                    </ol>
+                                    <div class="flex gap-2 mt-2">
+                                        <span class="text-xs bg-dark px-2 py-1 rounded text-gray-400">100%</span>
+                                        <span class="text-xs bg-dark px-2 py-1 rounded text-gray-400">50%</span>
+                                        <span class="text-xs bg-dark px-2 py-1 rounded text-gray-400">20%</span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gradient-to-r from-purple-900/30 to-transparent p-4 rounded-xl border border-purple-500/30">
+                                    <h4 class="text-white font-semibold mb-2">
+                                        <i class="fas fa-flask text-purple-400 mr-2"></i>Évaluation
+                                    </h4>
+                                    <p class="text-gray-400 text-sm">Toutes les stratégies sur le <strong class="text-white">même test set figé</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Livrables -->
+                <div class="mt-12" style="animation: slideUp 0.6s ease-out 0.3s both;">
+                    <div class="glass-card rounded-2xl p-8">
+                        <h3 class="text-2xl font-bold text-white mb-6 text-center">📦 Livrables — Semaines 4-5</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="text-center p-4 bg-dark rounded-xl">
+                                <i class="fas fa-table text-accent text-3xl mb-3"></i>
+                                <h4 class="text-white font-semibold">Tableau Comparatif</h4>
+                                <p class="text-xs text-gray-400 mt-2">Baseline/CW/Focal/SMOTE/ADASYN/Back-Trans sur même test set</p>
+                            </div>
+                            <div class="text-center p-4 bg-dark rounded-xl">
+                                <i class="fas fa-th text-success text-3xl mb-3"></i>
+                                <h4 class="text-white font-semibold">Matrices de Confusion</h4>
+                                <p class="text-xs text-gray-400 mt-2 arabic-text">كل استراتيجية — مصفوفة الخلط</p>
+                            </div>
+                            <div class="text-center p-4 bg-dark rounded-xl">
+                                <i class="fab fa-github text-gray-400 text-3xl mb-3"></i>
+                                <h4 class="text-white font-semibold">GitHub Repository</h4>
+                                <p class="text-xs text-gray-400 mt-2">Code commenté + requirements.txt + README</p>
+                            </div>
+                            <div class="text-center p-4 bg-dark rounded-xl">
+                                <i class="fas fa-file-powerpoint text-danger text-3xl mb-3"></i>
+                                <h4 class="text-white font-semibold">Présentation</h4>
+                                <p class="text-xs text-gray-400 mt-2">Max 15 slides — 10min exposé + 5min questions</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-gradient-to-r from-amber-900/30 to-transparent rounded-xl border border-amber-500/30">
+                            <div class="flex items-center">
+                                <i class="fas fa-star text-amber-400 text-2xl mr-4"></i>
+                                <div>
+                                    <h4 class="text-white font-bold">Bonus (+2 pts)</h4>
+                                    <p class="text-gray-400 text-sm">Stratégie hybride documentée: CW + SMOTE embeddings, ou ratios 20/50/100%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Outils Collaboratifs Section -->
+    <section id="outils" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <span class="text-accent font-medium tracking-wider uppercase">Section IV</span>
+                    <h2 class="text-4xl font-bold text-white mt-2">Outils Collaboratifs</h2>
+                    <p class="text-gray-400 mt-2 arabic-text">أدوات العمل الجماعي</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Code & Expérimentation -->
+                    <div style="animation: slideUp 0.6s ease-out;">
+                        <div class="glass-card rounded-2xl p-6 hover-lift h-full">
+                            <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                                <i class="fas fa-code text-accent mr-2"></i>
+                                Code & Expérimentation
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fab fa-google text-yellow-400 mr-3"></i>
+                                        <span class="text-gray-300">Google Colab</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">GPU T4</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fab fa-kaggle text-cyan-400 mr-3"></i>
+                                        <span class="text-gray-300">Kaggle Notebooks</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">GPU 30h/semaine</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-laptop-code text-blue-400 mr-3"></i>
+                                        <span class="text-gray-300">VSCode + Live Share</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">Collaboration</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Git & GitHub -->
+                    <div style="animation: slideUp 0.6s ease-out 0.1s both;">
+                        <div class="glass-card rounded-2xl p-6 hover-lift h-full">
+                            <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                                <i class="fab fa-github text-gray-400 mr-2"></i>
+                                Git & GitHub
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="p-3 bg-dark rounded-lg">
+                                    <div class="text-accent font-mono text-sm mb-1">main/</div>
+                                    <div class="text-gray-400 text-xs">Stable — production ready</div>
+                                </div>
+                                <div class="p-3 bg-dark rounded-lg">
+                                    <div class="text-warning font-mono text-sm mb-1">dev/</div>
+                                    <div class="text-gray-400 text-xs">Tests — intégration</div>
+                                </div>
+                                <div class="p-3 bg-dark rounded-lg">
+                                    <div class="text-success font-mono text-sm mb-1">strategy-*/</div>
+                                    <div class="text-gray-400 text-xs">Branches par stratégie</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Organisation -->
+                    <div style="animation: slideUp 0.6s ease-out 0.2s both;">
+                        <div class="glass-card rounded-2xl p-6 hover-lift h-full">
+                            <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                                <i class="fas fa-tasks text-success mr-2"></i>
+                                Organisation
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-sticky-note text-gray-400 mr-3"></i>
+                                        <span class="text-gray-300">Notion</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500 arabic-text">تتبع المهام</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fab fa-trello text-blue-400 mr-3"></i>
+                                        <span class="text-gray-300">Trello</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">Kanban Board</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fab fa-discord text-indigo-400 mr-3"></i>
+                                        <span class="text-gray-300">Discord</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">Communication</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documentation -->
+                    <div style="animation: slideUp 0.6s ease-out 0.3s both;">
+                        <div class="glass-card rounded-2xl p-6 hover-lift h-full">
+                            <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                                <i class="fas fa-file-alt text-warning mr-2"></i>
+                                Documentation
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fab fa-google-drive text-green-400 mr-3"></i>
+                                        <span class="text-gray-300">Google Drive</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">Partage fichiers</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-pen-fancy text-teal-400 mr-3"></i>
+                                        <span class="text-gray-300">Overleaf</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">LaTeX Online</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-dark rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fab fa-canva text-pink-400 mr-3"></i>
+                                        <span class="text-gray-300">Canva / Slides</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">Présentation</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Grille de Notation Section -->
+    <section id="notation" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-16">
+                    <span class="text-accent font-medium tracking-wider uppercase">Évaluation</span>
+                    <h2 class="text-4xl font-bold text-white mt-2">Grille de Notation</h2>
+                    <p class="text-gray-400 mt-2 arabic-text">جدول النقاط</p>
+                </div>
+
+                <div style="animation: slideUp 0.6s ease-out;">
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="bg-gradient-to-r from-accent/20 to-purple-600/20">
+                                        <th class="text-left py-4 px-6 text-white font-bold">المعيار / Critère</th>
+                                        <th class="text-center py-4 px-6 text-white font-bold">النقاط / Points</th>
+                                        <th class="text-left py-4 px-6 text-white font-bold">التفاصيل / Détails</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-800">
+                                    <tr class="table-row-anim hover:bg-white/5">
+                                        <td class="py-4 px-6 text-gray-300">
+                                            <i class="fas fa-chart-bar text-blue-400 mr-2"></i>
+                                            EDA — تحليل البيانات
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="text-2xl font-bold text-accent">1.5</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-gray-400 text-sm">Distribution + visualisations + analyse linguistique</td>
+                                    </tr>
+                                    <tr class="table-row-anim hover:bg-white/5">
+                                        <td class="py-4 px-6 text-gray-300">
+                                            <i class="fas fa-broom text-cyan-400 mr-2"></i>
+                                            Preprocessing — الدارجة
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="text-2xl font-bold text-accent">1.5</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-gray-400 text-sm">Choix justifiés + adaptation TWIFL</td>
+                                    </tr>
+                                    <tr class="table-row-anim hover:bg-white/5">
+                                        <td class="py-4 px-6 text-gray-300">
+                                            <i class="fas fa-baseline text-green-400 mr-2"></i>
+                                            Baseline DziriBERT
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="text-2xl font-bold text-accent">2</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-gray-400 text-sm">Fine-tuning correct + métriques cohérentes</td>
+                                    </tr>
+                                    <tr class="table-row-anim hover:bg-white/5">
+                                        <td class="py-4 px-6 text-gray-300">
+                                            <i class="fas fa-weight-hanging text-purple-400 mr-2"></i>
+                                            Stratégie 1 — Loss Function
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="text-2xl font-bold text-accent">2</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-gray-400 text-sm">Class Weighting + Focal Loss + Combinaison</td>
+                                    </tr>
+                                    <tr class="table-row-anim hover:bg-white/5">
+                                        <td class="py-4 px-6 text-gray-300">
+                                            <i class="fas fa-clone text-pink-400 mr-2"></i>
+                                            Stratégie 2 — SMOTE/ADASYN
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="text-2xl font-bold text-accent">2</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-gray-400 text-sm">Extraction embeddings + variantes comparées</td>
+                                    </tr>
+                                    <tr class="table-row-anim hover:bg-white/5">
+                                        <td class="py-4 px-6 text-gray-300">
+                                            <i class="fas fa-exchange-alt text-amber-400 mr-2"></i>
+                                            Stratégie 3 — Back-Translation
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="text-2xl font-bold text-accent">1.5</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-gray-400 text-sm">Implémentation + filtrage + réévaluation</td>
+                                    </tr>
+                                    <tr class="table-row-anim hover:bg-white/5">
+                                        <td class="py-4 px-6 text-gray-300">
+                                            <i class="fas fa-file-alt text-indigo-400 mr-2"></i>
+                                            Rapport + Discussion critique
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="text-2xl font-bold text-accent">2</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-gray-400 text-sm">Réponses aux questions + spécificités darija</td>
+                                    </tr>
+                                    <tr class="table-row-anim hover:bg-white/5">
+                                        <td class="py-4 px-6 text-gray-300">
+                                            <i class="fas fa-code text-teal-400 mr-2"></i>
+                                            Qualité du code
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="text-2xl font-bold text-accent">1</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-gray-400 text-sm">Test set intact + README + requirements.txt</td>
+                                    </tr>
+                                    <tr class="table-row-anim hover:bg-white/5">
+                                        <td class="py-4 px-6 text-gray-300">
+                                            <i class="fas fa-microphone text-rose-400 mr-2"></i>
+                                            Soutenance orale
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="text-2xl font-bold text-accent">1.5</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-gray-400 text-sm">Clarté + maîtrise du sujet + réponses</td>
+                                    </tr>
+                                    <tr class="bg-accent/10">
+                                        <td class="py-4 px-6 text-white font-bold">
+                                            <i class="fas fa-calculator text-accent mr-2"></i>
+                                            TOTAL
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="text-3xl font-bold text-accent">15 pts</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-gray-400 text-sm"></td>
+                                    </tr>
+                                    <tr class="bg-amber-500/10">
+                                        <td class="py-4 px-6 text-white font-bold">
+                                            <i class="fas fa-star text-amber-400 mr-2"></i>
+                                            Bonus — استراتيجية هجينة
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="text-2xl font-bold text-amber-400">+2 pts</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-gray-400 text-sm">CW + SMOTE ou ratios 20/50/100%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-gray-800">
+        <div class="container mx-auto px-6">
+            <div class="max-w-6xl mx-auto text-center">
+                <div class="glass-card inline-block px-8 py-4 rounded-2xl">
+                    <p class="text-gray-400">
+                        <i class="fas fa-university text-accent mr-2"></i>
+                        Université USDB — Département Informatique
+                    </p>
+                    <p class="text-gray-500 text-sm mt-2">Dr. Soraya Cheriguene — Master 1 DS & NLP 2025/2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections
+        document.querySelectorAll('section > div').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(30px)';
+            section.style.transition = 'all 0.6s ease-out';
+            observer.observe(section);
+        });
+
+        // Navigation dots active state
+        const sections = document.querySelectorAll('section[id]');
+        const navDots = document.querySelectorAll('.nav-dot');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navDots.forEach(dot => {
+                dot.classList.remove('active');
+                if (dot.getAttribute('data-section') === current) {
+                    dot.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add parallax effect to hero
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const hero = document.getElementById('hero');
+            if (hero) {
+                hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+            }
+        });
+    </script>
+</body>
+</html>
